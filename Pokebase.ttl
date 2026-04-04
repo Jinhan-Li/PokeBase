@@ -12,28 +12,42 @@
 #    Object Properties
 #################################################################
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#CAN_LEARN
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#NO_DAMAGE_FROM
+:NO_DAMAGE_FROM rdf:type owl:ObjectProperty ;
+                rdfs:subPropertyOf owl:topObjectProperty ;
+                rdfs:domain :Type ;
+                rdfs:range :Type .
+
+
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#NO_DAMAGE_TO
+:NO_DAMAGE_TO rdf:type owl:ObjectProperty ;
+              rdfs:subPropertyOf owl:topObjectProperty ;
+              rdfs:domain :Type ;
+              rdfs:range :Type .
+
+
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/CAN_LEARN
 :CAN_LEARN rdf:type owl:ObjectProperty ;
            rdfs:subPropertyOf owl:topObjectProperty ;
            rdfs:domain :Pokemon ;
            rdfs:range :Move .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#DOUBLE_DAMAGE_FROM
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/DOUBLE_DAMAGE_FROM
 :DOUBLE_DAMAGE_FROM rdf:type owl:ObjectProperty ;
                     rdfs:subPropertyOf owl:topObjectProperty ;
                     rdfs:domain :Type ;
                     rdfs:range :Type .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#DOUBLE_DAMAGE_TO
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/DOUBLE_DAMAGE_TO
 :DOUBLE_DAMAGE_TO rdf:type owl:ObjectProperty ;
                   rdfs:subPropertyOf owl:topObjectProperty ;
                   rdfs:domain :Type ;
                   rdfs:range :Type .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#EVOLVES_FROM
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/EVOLVES_FROM
 :EVOLVES_FROM rdf:type owl:ObjectProperty ;
               rdfs:subPropertyOf owl:topObjectProperty ;
               owl:inverseOf :EVOLVES_TO ;
@@ -41,63 +55,63 @@
               rdfs:range :Pokemon .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#EVOLVES_TO
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/EVOLVES_TO
 :EVOLVES_TO rdf:type owl:ObjectProperty ;
             rdfs:subPropertyOf owl:topObjectProperty ;
             rdfs:domain :Pokemon ;
             rdfs:range :Pokemon .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#EVOLVE_BY_FRIENDSHIP
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/EVOLVE_BY_FRIENDSHIP
 :EVOLVE_BY_FRIENDSHIP rdf:type owl:ObjectProperty ;
                       rdfs:subPropertyOf :EVOLVES_TO ;
                       rdfs:domain :Pokemon ;
                       rdfs:range :Pokemon .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#EVOLVE_BY_ITEM
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/EVOLVE_BY_ITEM
 :EVOLVE_BY_ITEM rdf:type owl:ObjectProperty ;
                 rdfs:subPropertyOf :EVOLVES_TO ;
                 rdfs:domain :Pokemon ;
                 rdfs:range :Pokemon .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#EVOLVE_BY_LEVEL
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/EVOLVE_BY_LEVEL
 :EVOLVE_BY_LEVEL rdf:type owl:ObjectProperty ;
                  rdfs:subPropertyOf :EVOLVES_TO ;
                  rdfs:domain :Pokemon ;
                  rdfs:range :Pokemon .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#EVOLVE_BY_TRADE
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/EVOLVE_BY_TRADE
 :EVOLVE_BY_TRADE rdf:type owl:ObjectProperty ;
                  rdfs:subPropertyOf :EVOLVES_TO ;
                  rdfs:domain :Pokemon ;
                  rdfs:range :Pokemon .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#HALF_DAMAGE_FROM
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/HALF_DAMAGE_FROM
 :HALF_DAMAGE_FROM rdf:type owl:ObjectProperty ;
                   rdfs:subPropertyOf owl:topObjectProperty ;
                   rdfs:domain :Type ;
                   rdfs:range :Type .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#HALF_DAMAGE_TO
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/HALF_DAMAGE_TO
 :HALF_DAMAGE_TO rdf:type owl:ObjectProperty ;
                 rdfs:subPropertyOf owl:topObjectProperty ;
                 rdfs:domain :Type ;
                 rdfs:range :Type .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#HAS_ABILITY
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/HAS_ABILITY
 :HAS_ABILITY rdf:type owl:ObjectProperty ;
              rdfs:subPropertyOf owl:topObjectProperty ;
              rdfs:domain :Pokemon ;
              rdfs:range :Ability .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#HAS_TYPE
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/HAS_TYPE
 :HAS_TYPE rdf:type owl:ObjectProperty ;
           rdfs:subPropertyOf owl:topObjectProperty ;
           rdfs:domain [ rdf:type owl:Class ;
@@ -112,28 +126,28 @@
 #    Data properties
 #################################################################
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#accuracy
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/accuracy
 :accuracy rdf:type owl:DatatypeProperty ;
           rdfs:subPropertyOf owl:topDataProperty ;
           rdfs:domain :Move ;
           rdfs:range xsd:int .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#base_experience
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/base_experience
 :base_experience rdf:type owl:DatatypeProperty ;
                  rdfs:subPropertyOf owl:topDataProperty ;
                  rdfs:domain :Pokemon ;
                  rdfs:range xsd:int .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#height
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/height
 :height rdf:type owl:DatatypeProperty ;
         rdfs:subPropertyOf owl:topDataProperty ;
         rdfs:domain :Pokemon ;
         rdfs:range xsd:float .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#id
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/id
 :id rdf:type owl:DatatypeProperty ;
     rdfs:subPropertyOf owl:topDataProperty ;
     rdfs:domain [ rdf:type owl:Class ;
@@ -146,7 +160,7 @@
     rdfs:range xsd:int .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#name
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/name
 :name rdf:type owl:DatatypeProperty ;
       rdfs:subPropertyOf owl:topDataProperty ;
       rdfs:domain [ rdf:type owl:Class ;
@@ -159,28 +173,28 @@
       rdfs:range xsd:string .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#power
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/power
 :power rdf:type owl:DatatypeProperty ;
        rdfs:subPropertyOf owl:topDataProperty ;
        rdfs:domain :Move ;
        rdfs:range xsd:int .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#pp
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/pp
 :pp rdf:type owl:DatatypeProperty ;
     rdfs:subPropertyOf owl:topDataProperty ;
     rdfs:domain :Move ;
     rdfs:range xsd:int .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#priority
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/priority
 :priority rdf:type owl:DatatypeProperty ;
           rdfs:subPropertyOf owl:topDataProperty ;
           rdfs:domain :Move ;
           rdfs:range xsd:int .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#weight
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/weight
 :weight rdf:type owl:DatatypeProperty ;
         rdfs:subPropertyOf owl:topDataProperty ;
         rdfs:domain :Pokemon ;
@@ -191,20 +205,20 @@
 #    Classes
 #################################################################
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#Ability
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/Ability
 :Ability rdf:type owl:Class .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#Move
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/Move
 :Move rdf:type owl:Class .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#PhysicalMove
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/PhysicalMove
 :PhysicalMove rdf:type owl:Class ;
               rdfs:subClassOf :Move .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#Pokemon
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/Pokemon
 :Pokemon rdf:type owl:Class ;
          rdfs:subClassOf [ rdf:type owl:Restriction ;
                            owl:onProperty :CAN_LEARN ;
@@ -225,17 +239,17 @@
                          ] .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#SpecialMove
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/SpecialMove
 :SpecialMove rdf:type owl:Class ;
              rdfs:subClassOf :Move .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#StatusMove
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/StatusMove
 :StatusMove rdf:type owl:Class ;
             rdfs:subClassOf :Move .
 
 
-###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5#Type
+###  http://www.semanticweb.org/user/ontologies/2026/3/untitled-ontology-5/Type
 :Type rdf:type owl:Class .
 
 
