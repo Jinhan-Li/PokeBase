@@ -29,4 +29,6 @@ frontend/dist/
 *.tmp
 
 # agnet用
-*.claude
+CLAUDE.md
+CLAUDE-ZH.md
+.claude/
