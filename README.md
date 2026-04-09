@@ -20,9 +20,18 @@
 cp .env.example .env
 # 编辑 .env 文件，填入 NEO4J_PASSWORD 和 DASHSCOPE_API_KEY
 ```
-
+### 0.5 使用conda配置环境
+```bash
+# 1. 创建基础环境（使用Python 3.12）
+conda create -n PokeBase python=3.12 pip -y
+# 2. 激活环境
+conda activate PokeBase
+# 3. 安装requirements.txt中的依赖
+cd backend
+pip install -r requirements.txt
+```
 ### 1. 检查环境
-
+所有步骤需要回到主目录进行，以下不再赘述
 ```bash
 cd backend
 python check_env.py
