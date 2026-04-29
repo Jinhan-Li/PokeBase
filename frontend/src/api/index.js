@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: 'http://localhost:8000/api',
-  timeout: 30000
+  timeout: 90000
 })
 
 export function chat(question) {
