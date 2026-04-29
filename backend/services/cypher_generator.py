@@ -26,19 +26,19 @@ CYPHER_PROMPT = """
 返回：MATCH (p:Pokemon {{name: "charizard"}}) RETURN p.name, p.weight
 
 用户问："火属性克制哪些属性？"
-返回：MATCH (f:Type {{name: "fire"}})-[:EFFECTIVE_TO {{multiplier: 2.0}}]->(t:Type) RETURN t.name
+返回：MATCH (f:Type {{name: "fire"}})-[:DAMAGE_TO {{multiplier: 2.0}}]->(t:Type) RETURN t.name
 
 用户问："什么属性克制水？"
-返回：MATCH (f:Type)-[:EFFECTIVE_TO {{multiplier: 2.0}}]->(t:Type {{name: "water"}}) RETURN f.name
-
-用户问："妙蛙种子如何进化？"
-返回：MATCH (p:Pokemon {{name: "bulbasaur"}})-[:EVOLVES_TO]->(e) RETURN e.name
+返回：MATCH (f:Type)-[:DAMAGE_TO {{multiplier: 2.0}}]->(t:Type {{name: "water"}}) RETURN f.name
 
 用户问："皮卡丘会什么招式？"
 返回：MATCH (p:Pokemon {{name: "pikachu"}})-[:CAN_LEARN]->(m:Move) RETURN m.name LIMIT 10
 
 用户问："哪些属性被火属性两倍克制？"
-返回：MATCH (f:Type {{name: "fire"}})-[:EFFECTIVE_TO {{multiplier: 2.0}}]->(t:Type) RETURN t.name
+返回：MATCH (f:Type {{name: "fire"}})-[:DAMAGE_TO {{multiplier: 2.0}}]->(t:Type) RETURN t.name
+
+用户问："十万伏特是什么属性的招式？"
+返回：MATCH (m:Move {{name: "thunderbolt"}})-[:HAS_TYPE]->(t:Type) RETURN m.name, t.name
 
 ## 用户问题
 {question}
@@ -68,11 +68,11 @@ def generate_cypher(question: str) -> str:
     # 清理 markdown 标记
     cypher = cypher.strip()
     cypher = re.sub(r'^```(?:cypher)?\s*', '', cypher, flags=re.IGNORECASE)
-    cypher = cypher.rstrip('`').strip()
+    cypher = re.sub(r'```\s*$', '', cypher).strip()
 
-    # 只保留第一行（LLM 可能返回多行内容）
-    lines = cypher.split('\n')
-    cypher = lines[0].strip()
+    # 合并多行 Cypher（去掉空行，保留有效语句行）
+    lines = [line.strip() for line in cypher.split('\n') if line.strip()]
+    cypher = ' '.join(lines)
 
     if not cypher:
         raise ValueError("LLM 返回了空的 Cypher 语句")

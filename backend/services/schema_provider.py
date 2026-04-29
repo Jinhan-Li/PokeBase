@@ -13,13 +13,13 @@ SCHEMA_TEXT = """
 - (Pokemon)-[:HAS_TYPE]->(Type)
 - (Pokemon)-[:HAS_ABILITY]->(Ability)
 - (Pokemon)-[:CAN_LEARN]->(Move)
-- (Pokemon)-[:EVOLVES_TO]->(Pokemon)
-- (Pokemon)-[:EVOLVES_FROM]->(Pokemon)
-- (Type)-[:EFFECTIVE_TO {multiplier}]->(Type)
-  multiplier 值：2.0(双倍伤害), 0.5(一半伤害), 0.0(无效)
 - (Move)-[:HAS_TYPE]->(Type)
+- (Type)-[:DAMAGE_TO {multiplier}]->(Type)
+  multiplier 值：2.0(双倍伤害), 0.5(一半伤害), 0.0(无效)
 
-注意：name 属性是英文小写（如 "pikachu", "fire"）
+注意：
+- name 属性是英文小写（如 "pikachu", "fire"）
+- 当前数据库中没有进化关系（EVOLVES_TO）数据
 """.strip()
 
 

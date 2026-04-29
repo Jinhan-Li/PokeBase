@@ -2,6 +2,7 @@
 """Neo4j 图数据库服务"""
 
 import logging
+
 from neo4j import GraphDatabase
 from config import NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
 
