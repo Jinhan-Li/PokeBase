@@ -25,11 +25,11 @@ def import_data(entities: list[str] = None, limit: int = 151):
 
 
 @router.get("/schema")
-def get_schema():
+def schema():
     """获取当前图谱 Schema 信息"""
-    from services.schema_provider import get_schema
+    from services.schema_provider import get_schema as get_schema_text
     return {
-        "schema": get_schema(),
+        "schema": get_schema_text(),
         "nodes": ["Pokemon", "Type", "Ability", "Move"],
         "relationships": [
             "HAS_TYPE", "HAS_ABILITY", "CAN_LEARN",
