@@ -12,14 +12,14 @@
 
 | 编号 | 问题 | 预期 Cypher | 预期答案 |
 |------|------|------------|---------|
-| T4 | "火属性克制哪些属性？" | `MATCH (f:Type {name: "fire"})-[:EFFECTIVE_TO {multiplier: 2.0}]->(t:Type) RETURN t.name` | "火属性克制草、冰、虫、钢" |
-| T5 | "哪些属性克制水？" | `MATCH (t:Type {name: "water"})<-[:EFFECTIVE_TO {multiplier: 2.0}]-(weak:Type) RETURN weak.name` | "电属性和草属性克制水" |
+| T4 | "火属性克制哪些属性？" | `MATCH (f:Type {name: "fire"})-[:DAMAGE_TO {multiplier: 2.0}]->(t:Type) RETURN t.name` | "火属性克制草、冰、虫、钢" |
+| T5 | "哪些属性克制水？" | `MATCH (t:Type {name: "water"})<-[:DAMAGE_TO {multiplier: 2.0}]-(weak:Type) RETURN weak.name` | "电属性和草属性克制水" |
 
-## 进化链类
+## 当前 Schema 限制类
 
 | 编号 | 问题 | 预期 Cypher | 预期答案 |
 |------|------|------------|---------|
-| T6 | "妙蛙种子如何进化？" | `MATCH (p:Pokemon {name: "bulbasaur"})-[:EVOLVES_TO]->(next) RETURN next.name` | "妙蛙种子进化成妙蛙草" |
+| T6 | "妙蛙种子如何进化？" | `RETURN "当前数据库 Schema 没有进化关系数据，无法查询进化链。" AS message` | 说明当前数据库没有进化关系数据 |
 
 ## 验证方式
 

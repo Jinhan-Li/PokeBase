@@ -2,6 +2,7 @@
 """通义千问 API 服务"""
 
 import logging
+import re
 import time
 
 from openai import OpenAI, APIConnectionError, RateLimitError, APITimeoutError
@@ -46,6 +47,8 @@ def call_llm(prompt: str, temperature: float = 0.1, system_prompt: str = None) -
                 temperature=temperature
             )
             content = response.choices[0].message.content
+            # 思考模型（如 qwen3.5-flash）可能在 content 中包含 <think> 标签
+            content = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL).strip()
             logger.info(f"LLM call successful (attempt {attempt}), response length: {len(content)}")
             return content
         except (APIConnectionError, RateLimitError, APITimeoutError) as e:
