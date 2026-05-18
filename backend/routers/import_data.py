@@ -33,6 +33,6 @@ def schema():
         "nodes": ["Pokemon", "Type", "Ability", "Move"],
         "relationships": [
             "HAS_TYPE", "HAS_ABILITY", "CAN_LEARN",
-            "EVOLVES_TO", "EVOLVES_FROM", "EFFECTIVE_TO"
+            "DAMAGE_TO"
         ]
     }

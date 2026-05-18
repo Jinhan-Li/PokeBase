@@ -85,7 +85,7 @@ if __name__ == "__main__":
     load_with_data("import_can_learn.cypher", "can_learn_relations.json")
 
     # 9. 属性克制关系
-    print("\n[9/9] 导入 EFFECTIVE_TO 关系...")
+    print("\n[9/9] 导入 DAMAGE_TO 关系...")
     load_with_data("import_type_effective.cypher", "type_effective_relations.json")
 
     print("\n✓ 导入完成")
