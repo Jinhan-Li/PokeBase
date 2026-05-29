@@ -92,12 +92,15 @@ FORBIDDEN_KEYWORDS = (
 )
 
 
-def _build_prompt(question: str) -> str:
-    return (
+def _build_prompt(question: str, error_msg: str = "") -> str:
+    prompt = (
         CYPHER_PROMPT
         .replace("{schema}", get_schema())
         .replace("{question}", question)
     )
+    if error_msg:
+        prompt += f"\n\n注意：你之前生成的 Cypher 查询执行报错了，错误信息如下：\n{error_msg}\n请你修正并重新生成查询语句。"
+    return prompt
 
 
 def _strip_markdown(text: str) -> str:
@@ -125,9 +128,9 @@ def _validate_read_only(cypher: str) -> None:
             raise ValueError(f"LLM 返回了非只读 Cypher 语句，包含禁止关键字: {keyword}")
 
 
-def generate_cypher(question: str) -> str:
+def generate_cypher(question: str, error_msg: str = "") -> str:
     """Generate a read-only Cypher query for a natural-language question."""
-    cypher = _strip_markdown(call_llm(_build_prompt(question), temperature=0.1))
+    cypher = _strip_markdown(call_llm(_build_prompt(question, error_msg), temperature=0.1))
     _validate_read_only(cypher)
     logger.info("Generated Cypher: %s", cypher)
     return cypher
