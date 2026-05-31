@@ -86,6 +86,7 @@ RETURN p.id, p.name, p.hp, p.attack, p.speed
 | `accuracy` | Integer | 命中率（%） | `100` |
 | `pp` | Integer | 使用次数 | `15` |
 | `priority` | Integer | 优先度 | `0` |
+| `damage_class` | String | 物理/特殊/变化 | `"special"` |
 
 **数量**：919
 

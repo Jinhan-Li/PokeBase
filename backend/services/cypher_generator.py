@@ -66,6 +66,9 @@ CYPHER_PROMPT = """
 用户问："十万伏特是什么属性的招式？"
 返回：MATCH (m:Move {name: "thunderbolt"})-[:HAS_TYPE]->(t:Type) RETURN m.name, t.name
 
+用户问："哪些招式是物理伤害类别的？"
+返回：MATCH (m:Move {damage_class: "physical"}) RETURN m.name, m.power ORDER BY m.power DESC LIMIT 10
+
 用户问："各属性分别有多少宝可梦？"
 返回：MATCH (p:Pokemon)-[:HAS_TYPE]->(t:Type) RETURN t.name AS type, count(DISTINCT p) AS pokemon_count ORDER BY pokemon_count DESC, type
 

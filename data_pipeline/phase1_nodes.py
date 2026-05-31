@@ -103,13 +103,18 @@ class PokemonNodeBuilder:
 
     @staticmethod
     def _create_move_node(tx, data):
+        damage_class = None
+        if data.get('damage_class'):
+            damage_class = data['damage_class'].get('name')
+
         query = """
         MERGE (m:Move {id: $id})
         SET m.name = $name,
             m.accuracy = $accuracy,
             m.priority = $priority,
             m.pp = $pp,
-            m.power = $power
+            m.power = $power,
+            m.damage_class = $damage_class
         """
         tx.run(query, 
                id=data.get('id'), 
@@ -117,7 +122,8 @@ class PokemonNodeBuilder:
                accuracy=data.get('accuracy'),
                priority=data.get('priority'),
                pp=data.get('pp'),
-               power=data.get('power'))
+               power=data.get('power'),
+               damage_class=damage_class)
 
     # ==========================================
     # Main Execution Pipelines (With Skip Logic)
@@ -155,21 +161,25 @@ class PokemonNodeBuilder:
                 time.sleep(0.05)
         print("    Finished loading Abilities.")
 
-    def load_moves(self, max_id=165):
+    def load_moves(self, max_id=165, force_update=True):
         existing_ids = self.get_existing_ids("Move")
-        print(f"\n[+] Starting to load Moves (Existing: {len(existing_ids)})...")
+        print(f"\n[+] Starting to load/update Moves...")
         
         with self.driver.session() as session:
             for i in range(1, max_id + 1):
-                if i in existing_ids:
+                if not force_update and i in existing_ids:
                     continue
                 
-                data = self.fetch_api_data(f"move/{i}")
-                if data:
+                # Fetch from local cache instead of API
+                cache_file = os.path.join("cache", "move", f"{i}.json")
+                if os.path.exists(cache_file):
+                    with open(cache_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
                     session.execute_write(self._create_move_node, data)
-                    print(f"    [INSERTED] Move (ID: {i})")
-                time.sleep(0.05)
-        print("    Finished loading Moves.")
+                    print(f"    [UPSERTED] Move: {data['name']} (ID: {i})")
+                else:
+                    print(f"    [WARNING] Cache missing for Move ID: {i}")
+        print("    Finished loading/updating Moves.")
 
     def load_pokemon(self, start_id=1, end_id=151, force_update=True):
         existing_ids = self.get_existing_ids("Pokemon")
