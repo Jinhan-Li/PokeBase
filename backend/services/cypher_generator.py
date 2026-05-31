@@ -16,7 +16,7 @@ CYPHER_PROMPT = """
 1. 只返回 Cypher，不要解释，不要 Markdown 代码块。
 2. 只能使用下方 Schema 中存在的节点标签、关系类型和属性。
 3. 所有 name 属性值必须是英文小写形式，例如 "pikachu"、"charizard"、"fire"、"thunderbolt"。
-4. 不要编造不存在的关系。当前 Schema 没有进化关系；遇到进化问题时返回一条常量查询说明不可用。
+4. 必须使用 EVOLVES_TO 或 EVOLVES_FROM 来查询进化路径。
 5. 查询必须只读，只使用 MATCH、OPTIONAL MATCH、WITH、RETURN、ORDER BY、LIMIT、UNWIND 等查询语法。
 
 ## 图谱 Schema
@@ -70,7 +70,19 @@ CYPHER_PROMPT = """
 返回：MATCH (p:Pokemon)-[:CAN_LEARN]->(m:Move)-[:HAS_TYPE]->(:Type {name: "electric"}) WHERE m.power > 100 RETURN DISTINCT p.name, collect(DISTINCT m.name) AS moves ORDER BY p.name LIMIT 50
 
 用户问："妙蛙种子如何进化？"
-返回：RETURN "当前数据库 Schema 没有进化关系数据，无法查询进化链。" AS message
+返回：MATCH (p:Pokemon {name: "bulbasaur"})-[r:EVOLVES_TO]->(e:Pokemon) RETURN e.name, r.min_level, r.item, r.details
+
+用户问："大器晚成的宝可梦有哪些（50级以后进化的）？"
+返回：MATCH (from:Pokemon)-[r:EVOLVES_TO]->(to:Pokemon) WHERE r.min_level >= 50 RETURN from.name, to.name, r.min_level
+
+用户问："哪些宝可梦使用火之石进化？"
+返回：MATCH (from:Pokemon)-[r:EVOLVES_TO]->(to:Pokemon) WHERE r.item = 'fire-stone' RETURN from.name, to.name
+
+用户问："雷丘是由谁进化来的？"
+返回：MATCH (p:Pokemon {name: "raichu"})-[:EVOLVES_FROM]->(pre:Pokemon) RETURN pre.name
+
+用户问："哪些宝可梦必须在特定地点（如殿元山 mt-coronet）才能进化？"
+返回：MATCH (from:Pokemon)-[r:EVOLVES_TO]->(to:Pokemon) WHERE r.details CONTAINS '"location": "mt-coronet"' RETURN from.name, to.name
 
 ## 用户问题
 {question}
