@@ -11,4 +11,4 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")  # 必须从环境变量读取
 
 DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "")
 DASHSCOPE_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-LLM_MODEL = os.getenv("LLM_MODEL", "qwen-plus")
+LLM_MODEL = os.getenv("LLM_MODEL", "deepseek-v4-flash")

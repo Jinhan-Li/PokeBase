@@ -1,22 +1,3 @@
-
-## 1. 概览
-
-```
-节点总数：  2,269
-  - Pokemon:  1,025
-  - Type:        18
-  - Ability:    307
-  - Move:       919
-
-关系总数：82,313
-  - HAS_TYPE:     2,470
-  - HAS_ABILITY:  2,411
-  - CAN_LEARN:   78,512
-  - DAMAGE_TO:      120
-```
-
----
-
 ## 2. 节点（Node）
 
 ### 2.1 Pokemon
@@ -35,14 +16,7 @@
 | `special_defense` | Integer | 种族值：特防 | `65` |
 | `speed` | Integer | 种族值：速度 | `45` |
 
-**数量**：1,025
 
-**示例**：
-```cypher
-MATCH (p:Pokemon {name: "pikachu"})
-RETURN p.id, p.name, p.hp, p.attack, p.speed
--- 结果: 25, "pikachu", 35, 55, 90
-```
 
 ### 2.2 Type
 
@@ -50,8 +24,6 @@ RETURN p.id, p.name, p.hp, p.attack, p.speed
 |------|------|------|------|
 | `id` | Integer | 属性编号 | `13` |
 | `name` | String | 英文名（小写） | `"electric"` |
-
-**数量**：18
 
 **完整列表**：
 
@@ -74,8 +46,6 @@ RETURN p.id, p.name, p.hp, p.attack, p.speed
 | `id` | Integer | 特性编号 | `9` |
 | `name` | String | 英文名（小写） | `"static"` |
 
-**数量**：307
-
 ### 2.4 Move
 
 | 属性 | 类型 | 说明 | 示例 |
@@ -87,8 +57,6 @@ RETURN p.id, p.name, p.hp, p.attack, p.speed
 | `pp` | Integer | 使用次数 | `15` |
 | `priority` | Integer | 优先度 | `0` |
 | `damage_class` | String | 物理/特殊/变化 | `"special"` |
-
-**数量**：919
 
 ---
 
@@ -206,8 +174,6 @@ RETURN m.name, t.name
 ```
 (Type)-[:DAMAGE_TO {multiplier}]->(Type)
 ```
-
-- **数量**：120
 - **说明**：属性之间的伤害倍率关系
 - **属性**：
 
@@ -233,114 +199,9 @@ RETURN t.name
 MATCH (f:Type)-[:DAMAGE_TO {multiplier: 2.0}]->(t:Type {name: "water"})
 RETURN f.name
 -- 结果: grass, electric
-
--- 水属性免疫哪些属性？（multiplier = 0.0 的情况）
-MATCH (f:Type)-[:DAMAGE_TO {multiplier: 0.0}]->(t:Type)
-RETURN f.name, t.name
 ```
 
 ---
 
-## 4. 完整关系图
 
-```
-                    ┌──────────┐
-                    │  Ability │
-                    │ id, name │
-                    └────▲─────┘
-                         │
-                    HAS_ABILITY {is_hidden, slot}
-                         │
-┌──────────┐        ┌────┴─────┐        ┌──────────┐
-│   Type   │◄───────│ Pokemon  │───────►│   Move   │
-│ id, name │HAS_TYPE│id,name,  │CAN_LEARN│id,name,  │
-└────▲─────┘{slot}  │height,   │{versions,methods,levels}
-     │              │weight,   │        │power,    │
-     │              │base_exp  │        │accuracy, │
-     │              └─┬──────▲─┘        │pp,priority│
-     │                │      │               │
-     │     EVOLVES_TO │      │ EVOLVES_FROM  │
-     │ {min_level,item,details}              │
-     │                ▼      │               │
-     │              ┌──────────┐             │
-     │              │ Pokemon  │             │
-     │              └──────────┘             │
-     │                                       │
-     │  DAMAGE_TO {multiplier}          HAS_TYPE
-     │────────────────────────►              │
-     │                                       │
-     └───────────────────────────────────────┘
-```
 
----
-
-## 5. 命名规范
-
-| 类别 | 规范 | 示例 |
-|------|------|------|
-| 节点标签 | PascalCase | `Pokemon`, `Type`, `Ability`, `Move` |
-| 关系类型 | UPPER_SNAKE_CASE | `HAS_TYPE`, `CAN_LEARN`, `DAMAGE_TO` |
-| 属性名 | snake_case | `base_experience`, `multiplier` |
-| name 值 | 英文小写 + 连字符 | `"pikachu"`, `"speed-boost"`, `"thunderbolt"` |
-
-**重要**：查询时 name 属性必须使用英文小写，如 `"pikachu"` 而非 `"Pikachu"` 或 `"皮卡丘"`。
-
----
-
-## 6. 常用查询模板
-
-### 实体查询
-
-```cypher
--- 查 Pokemon 基本信息
-MATCH (p:Pokemon {name: "pikachu"}) RETURN p
-
--- 查 Pokemon 的所有属性
-MATCH (p:Pokemon {name: "pikachu"})-[:HAS_TYPE]->(t:Type) RETURN t.name
-
--- 查 Pokemon 的所有特性
-MATCH (p:Pokemon {name: "pikachu"})-[:HAS_ABILITY]->(a:Ability) RETURN a.name
-
--- 查 Pokemon 的招式（限制数量）
-MATCH (p:Pokemon {name: "pikachu"})-[:CAN_LEARN]->(m:Move) RETURN m.name LIMIT 20
-```
-
-### 属性克制
-
-```cypher
--- A 属性克制哪些属性？
-MATCH (t1:Type {name: "fire"})-[:DAMAGE_TO {multiplier: 2.0}]->(t2:Type) RETURN t2.name
-
--- 什么属性克制 B？
-MATCH (t1:Type)-[:DAMAGE_TO {multiplier: 2.0}]->(t2:Type {name: "water"}) RETURN t1.name
-
--- A 对 B 的伤害倍率
-MATCH (t1:Type {name: "fire"})-[r:DAMAGE_TO]->(t2:Type {name: "water"}) RETURN r.multiplier
-```
-
-### 招式查询
-
-```cypher
--- 查招式的属性和威力
-MATCH (m:Move {name: "thunderbolt"})-[:HAS_TYPE]->(t:Type)
-RETURN m.name, m.power, m.accuracy, t.name
-
--- 查某属性的所有招式
-MATCH (m:Move)-[:HAS_TYPE]->(t:Type {name: "fire"})
-RETURN m.name, m.power ORDER BY m.power DESC LIMIT 10
-```
-
-### 统计查询
-
-```cypher
--- 各属性 Pokemon 数量
-MATCH (p:Pokemon)-[:HAS_TYPE]->(t:Type)
-RETURN t.name, count(p) AS cnt ORDER BY cnt DESC
-
--- 威力最高的招式 Top 10
-MATCH (m:Move)-[:HAS_TYPE]->(t:Type)
-RETURN m.name, m.power, t.name ORDER BY m.power DESC LIMIT 10
-
--- 体重最大的 Pokemon Top 10
-MATCH (p:Pokemon) RETURN p.name, p.weight ORDER BY p.weight DESC LIMIT 10
-```

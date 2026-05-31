@@ -16,87 +16,148 @@ CYPHER_PROMPT = """
 1. 只返回 Cypher，不要解释，不要 Markdown 代码块。
 2. 只能使用下方 Schema 中存在的节点标签、关系类型和属性。
 3. 所有 name 属性值必须是英文小写形式，例如 "pikachu"、"charizard"、"fire"、"thunderbolt"。
-4. 必须使用 EVOLVES_TO 或 EVOLVES_FROM 来查询进化路径。
-5. 查询必须只读，只使用 MATCH、OPTIONAL MATCH、WITH、RETURN、ORDER BY、LIMIT、UNWIND 等查询语法。
+4. 查询必须只读，只使用 MATCH、OPTIONAL MATCH、WHERE、WITH、RETURN、ORDER BY、LIMIT、UNWIND、collect、count、min、max、sum、reduce、DISTINCT 等查询语法。
+5. 禁止使用 CREATE、MERGE、DELETE、SET、REMOVE、DROP、LOAD CSV、CALL dbms 等写入或管理语句。
+6. methods、versions、levels 是 CAN_LEARN 关系上的列表属性，不能写成 r.method、r.version、r.level。
+7. DAMAGE_TO 的方向是：攻击方属性 -> 防守方属性。
+8. 如果用户问“非本系”，表示招式属性不属于宝可梦自身任何属性。
+9. 如果没有明确的 DAMAGE_TO 关系，默认倍率按 1.0 处理。
 
-## 图谱 Schema
+
+# 图谱 Schema
 {schema}
 
-## 高质量 Cypher 示例
-
-用户问："皮卡丘有什么属性？"
-返回：MATCH (p:Pokemon {name: "pikachu"})-[:HAS_TYPE]->(t:Type) RETURN t.name
-
-用户问："皮卡丘的全国图鉴编号、身高、体重和基础经验是多少？"
-返回：MATCH (p:Pokemon {name: "pikachu"}) RETURN p.id AS id, p.height / 10.0 AS height_m, p.weight / 10.0 AS weight_kg, p.base_experience AS base_experience
-
-用户问："妙蛙种子的各项种族值是多少？"
-返回：MATCH (p:Pokemon {name: "bulbasaur"}) RETURN p.hp, p.attack, p.defense, p.special_attack, p.special_defense, p.speed
-
-用户问："哪些宝可梦的原始攻击大于130？"
-返回：MATCH (p:Pokemon) WHERE p.attack > 130 RETURN p.name, p.attack ORDER BY p.attack DESC LIMIT 10
+# 示例：
 
 用户问："小火龙有什么特性？"
-返回：MATCH (p:Pokemon {name: "charmander"})-[:HAS_ABILITY]->(a:Ability) RETURN a.name
+返回：
+MATCH (p:Pokemon {{name: "charmander"}})-[:HAS_ABILITY]->(a:Ability)
+RETURN a.name
 
 用户问："喷火龙的体重是多少？"
-返回：MATCH (p:Pokemon {name: "charizard"}) RETURN p.name, p.weight / 10.0 AS weight_kg
+返回：
+MATCH (p:Pokemon {{name: "charizard"}})
+RETURN p.name, p.weight / 10.0 AS weight_kg
+
+用户问："皮卡丘是什么属性？"
+返回：
+MATCH (p:Pokemon {{name: "pikachu"}})-[r:HAS_TYPE]->(t:Type)
+RETURN p.name, t.name, r.slot
+ORDER BY r.slot
 
 用户问："火属性克制哪些属性？"
-返回：MATCH (f:Type {name: "fire"})-[:DAMAGE_TO {multiplier: 2.0}]->(t:Type) RETURN t.name
+返回：
+MATCH (f:Type {{name: "fire"}})-[:DAMAGE_TO {{multiplier: 2.0}}]->(t:Type)
+RETURN t.name
+ORDER BY t.id
 
-用户问："什么属性克制水？"
-返回：MATCH (f:Type)-[:DAMAGE_TO {multiplier: 2.0}]->(t:Type {name: "water"}) RETURN f.name
+用户问："什么属性克制水属性？"
+返回：
+MATCH (f:Type)-[:DAMAGE_TO {{multiplier: 2.0}}]->(t:Type {{name: "water"}})
+RETURN f.name
+ORDER BY f.id
 
-用户问："火属性打水属性是多少倍伤害？"
-返回：MATCH (attacker:Type {name: "fire"})-[r:DAMAGE_TO]->(defender:Type {name: "water"}) RETURN attacker.name AS attacking_type, defender.name AS defending_type, r.multiplier AS multiplier
+用户问："哪些宝可梦可以通过升级学会十万伏特？"
+返回：
+MATCH (p:Pokemon)-[r:CAN_LEARN]->(m:Move {{name: "thunderbolt"}})
+WHERE 'level-up' IN r.methods
+RETURN p.name, r.levels
+ORDER BY p.id
 
-用户问："哪些宝可梦同时拥有草属性和毒属性？"
-返回：MATCH (p:Pokemon)-[:HAS_TYPE]->(:Type {name: "grass"}) MATCH (p)-[:HAS_TYPE]->(:Type {name: "poison"}) RETURN DISTINCT p.name ORDER BY p.id LIMIT 50
+用户问："第一世代有哪些火属性宝可梦？"
+返回：
+MATCH (p:Pokemon)-[:HAS_TYPE]->(t:Type {{name: "fire"}})
+WHERE p.id >= 1 AND p.id <= 151
+RETURN p.id, p.name
+ORDER BY p.id
 
-用户问："皮卡丘会什么招式？"
-返回：MATCH (p:Pokemon {name: "pikachu"})-[:CAN_LEARN]->(m:Move) RETURN m.name ORDER BY m.name LIMIT 20
+用户问："第一世代中，有哪些宝可梦可以通过升级学到威力大于90，且非本系的伤害类招式？"
+返回：
+MATCH (p:Pokemon)-[:HAS_TYPE]->(pt:Type)
+WHERE p.id >= 1 AND p.id <= 151
+WITH p, collect(pt.name) AS pokemon_types
+MATCH (p)-[r:CAN_LEARN]->(m:Move)-[:HAS_TYPE]->(mt:Type)
+WHERE 'level-up' IN r.methods
+  AND m.power > 90
+  AND m.damage_class <> 'status'
+  AND NOT mt.name IN pokemon_types
+RETURN DISTINCT p.id, p.name, m.name, m.power, m.damage_class, mt.name AS move_type
+ORDER BY p.id, m.power DESC
 
-用户问："皮卡丘能学会哪些电属性招式？"
-返回：MATCH (p:Pokemon {name: "pikachu"})-[:CAN_LEARN]->(m:Move)-[:HAS_TYPE]->(t:Type {name: "electric"}) RETURN m.name, m.power, m.accuracy ORDER BY coalesce(m.power, 0) DESC, m.name LIMIT 20
+用户问："威力大于等于120的招式中，哪些宝可梦能通过升级最早学会？"
+返回：
+MATCH (p:Pokemon)-[r:CAN_LEARN]->(m:Move)
+WHERE m.power >= 120
+  AND 'level-up' IN r.methods
+  AND size(r.methods) = size(r.levels)
+UNWIND range(0, size(r.methods) - 1) AS i
+WITH p, m, r.methods[i] AS method, r.levels[i] AS lvl
+WHERE method = 'level-up' AND lvl > 0
+WITH m, min(lvl) AS min_level
+MATCH (p2:Pokemon)-[r2:CAN_LEARN]->(m)
+WHERE 'level-up' IN r2.methods
+  AND size(r2.methods) = size(r2.levels)
+UNWIND range(0, size(r2.methods) - 1) AS j
+WITH m, min_level, p2, r2.methods[j] AS method, r2.levels[j] AS lvl
+WHERE method = 'level-up' AND lvl = min_level
+RETURN m.name AS move, m.power AS power, min_level AS min_level, collect(DISTINCT p2.name) AS pokemon
+ORDER BY min_level ASC, power DESC
+LIMIT 10
 
-用户问："喷火龙能学的火属性招式里威力最高的前 10 个是什么？"
-返回：MATCH (p:Pokemon {name: "charizard"})-[:CAN_LEARN]->(m:Move)-[:HAS_TYPE]->(:Type {name: "fire"}) WHERE m.power IS NOT NULL RETURN m.name, m.power, m.accuracy ORDER BY m.power DESC, m.name LIMIT 10
+用户问："有哪些招式在红蓝版本可以学习，但在剑盾版本不能学习？"
+返回：
+MATCH (p:Pokemon)-[r:CAN_LEARN]->(m:Move)
+WHERE 'red-blue' IN r.versions
+  AND NOT 'sword-shield' IN r.versions
+WITH p, collect(DISTINCT m.name) AS lost_moves
+WHERE size(lost_moves) > 0
+RETURN p.id, p.name, lost_moves, size(lost_moves) AS lost_move_count
+ORDER BY lost_move_count DESC, p.id
+LIMIT 10
 
-用户问："十万伏特是什么属性的招式？"
-返回：MATCH (m:Move {name: "thunderbolt"})-[:HAS_TYPE]->(t:Type) RETURN m.name, t.name
+用户问："哪只宝可梦掌握的伤害类招式覆盖属性最多？"
+返回：
+MATCH (p:Pokemon)-[:CAN_LEARN]->(m:Move)-[:HAS_TYPE]->(t:Type)
+WHERE m.power IS NOT NULL
+  AND m.power > 0
+  AND m.damage_class <> 'status'
+RETURN p.id, p.name, count(DISTINCT t.name) AS covered_types, collect(DISTINCT t.name) AS type_list
+ORDER BY covered_types DESC, p.id
+LIMIT 5
 
-用户问："哪些招式是物理伤害类别的？"
-返回：MATCH (m:Move {damage_class: "physical"}) RETURN m.name, m.power ORDER BY m.power DESC LIMIT 10
 
-用户问："各属性分别有多少宝可梦？"
-返回：MATCH (p:Pokemon)-[:HAS_TYPE]->(t:Type) RETURN t.name AS type, count(DISTINCT p) AS pokemon_count ORDER BY pokemon_count DESC, type
+用户问："体重前20的宝可梦中，谁会最多先制招式？"
+返回：
+MATCH (p:Pokemon)
+WHERE p.weight IS NOT NULL
+WITH p
+ORDER BY p.weight DESC
+LIMIT 20
+OPTIONAL MATCH (p)-[:CAN_LEARN]->(m:Move)
+WHERE m.priority > 0
+RETURN p.id, p.name, p.weight, count(DISTINCT m) AS priority_move_count, collect(DISTINCT m.name) AS priority_moves
+ORDER BY priority_move_count DESC, p.weight DESC
 
-用户问："哪些属性对喷火龙造成双倍或更高伤害？"
-返回：MATCH (p:Pokemon {name: "charizard"})-[:HAS_TYPE]->(defType:Type) MATCH (atk:Type)-[r:DAMAGE_TO]->(defType) WITH atk, collect(r.multiplier) AS multipliers WITH atk, reduce(total = 1.0, m IN multipliers | total * m) AS total_multiplier WHERE total_multiplier >= 2.0 RETURN atk.name AS attacking_type, total_multiplier ORDER BY total_multiplier DESC, attacking_type
+用户问："哪些宝可梦有四倍弱点，但能学会克制该弱点属性的高威力招式？"
+返回：
+MATCH (p:Pokemon)-[:HAS_TYPE]->(def:Type)
+MATCH (weakness:Type)
+OPTIONAL MATCH (weakness)-[r:DAMAGE_TO]->(def)
+WITH p, weakness, collect(coalesce(r.multiplier, 1.0)) AS multipliers
+WITH p, weakness, reduce(total = 1.0, x IN multipliers | total * x) AS received_multiplier
+WHERE received_multiplier >= 4.0
+MATCH (p)-[:CAN_LEARN]->(m:Move)-[:HAS_TYPE]->(mt:Type)
+OPTIONAL MATCH (mt)-[counter:DAMAGE_TO]->(weakness)
+WITH p, weakness, received_multiplier, m, mt, coalesce(counter.multiplier, 1.0) AS counter_multiplier
+WHERE m.power >= 80
+  AND m.damage_class <> 'status'
+  AND counter_multiplier >= 2.0
+RETURN DISTINCT p.name AS pokemon, weakness.name AS quad_weakness, received_multiplier, m.name AS counter_move, m.power AS power, mt.name AS move_type, counter_multiplier
+ORDER BY received_multiplier DESC, power DESC
 
-用户问："哪些宝可梦可以学习威力大于 100 的电属性招式？"
-返回：MATCH (p:Pokemon)-[:CAN_LEARN]->(m:Move)-[:HAS_TYPE]->(:Type {name: "electric"}) WHERE m.power > 100 RETURN DISTINCT p.name, collect(DISTINCT m.name) AS moves ORDER BY p.name LIMIT 50
-
-用户问："妙蛙种子如何进化？"
-返回：MATCH (p:Pokemon {name: "bulbasaur"})-[r:EVOLVES_TO]->(e:Pokemon) RETURN e.name, r.min_level, r.item, r.details
-
-用户问："大器晚成的宝可梦有哪些（50级以后进化的）？"
-返回：MATCH (from:Pokemon)-[r:EVOLVES_TO]->(to:Pokemon) WHERE r.min_level >= 50 RETURN from.name, to.name, r.min_level
-
-用户问："哪些宝可梦使用火之石进化？"
-返回：MATCH (from:Pokemon)-[r:EVOLVES_TO]->(to:Pokemon) WHERE r.item = 'fire-stone' RETURN from.name, to.name
-
-用户问："雷丘是由谁进化来的？"
-返回：MATCH (p:Pokemon {name: "raichu"})-[:EVOLVES_FROM]->(pre:Pokemon) RETURN pre.name
-
-用户问："哪些宝可梦必须在特定地点（如殿元山 mt-coronet）才能进化？"
-返回：MATCH (from:Pokemon)-[r:EVOLVES_TO]->(to:Pokemon) WHERE r.details CONTAINS '"location": "mt-coronet"' RETURN from.name, to.name
-
-## 用户问题
+用户问：
 {question}
 
-请只返回 Cypher 查询语句，不要包含其他内容。
 """.strip()
 
 READ_ONLY_PREFIXES = ("MATCH", "OPTIONAL MATCH", "WITH", "UNWIND", "RETURN")
