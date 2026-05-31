@@ -30,6 +30,12 @@ CYPHER_PROMPT = """
 用户问："皮卡丘的全国图鉴编号、身高、体重和基础经验是多少？"
 返回：MATCH (p:Pokemon {name: "pikachu"}) RETURN p.id AS id, p.height / 10.0 AS height_m, p.weight / 10.0 AS weight_kg, p.base_experience AS base_experience
 
+用户问："妙蛙种子的各项种族值是多少？"
+返回：MATCH (p:Pokemon {name: "bulbasaur"}) RETURN p.hp, p.attack, p.defense, p.special_attack, p.special_defense, p.speed
+
+用户问："哪些宝可梦的原始攻击大于130？"
+返回：MATCH (p:Pokemon) WHERE p.attack > 130 RETURN p.name, p.attack ORDER BY p.attack DESC LIMIT 10
+
 用户问："小火龙有什么特性？"
 返回：MATCH (p:Pokemon {name: "charmander"})-[:HAS_ABILITY]->(a:Ability) RETURN a.name
 

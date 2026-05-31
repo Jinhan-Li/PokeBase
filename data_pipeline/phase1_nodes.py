@@ -1,5 +1,7 @@
 import requests
 import time
+import os
+import json
 from neo4j import GraphDatabase
 from config import NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
 
@@ -53,19 +55,35 @@ class PokemonNodeBuilder:
 
     @staticmethod
     def _create_pokemon_node(tx, data):
+        stats = {}
+        for s in data.get('stats', []):
+            stats[s['stat']['name']] = s['base_stat']
+            
         query = """
         MERGE (p:Pokemon {id: $id})
         SET p.name = $name,
             p.height = $height,
             p.weight = $weight,
-            p.base_experience = $base_experience
+            p.base_experience = $base_experience,
+            p.hp = $hp,
+            p.attack = $attack,
+            p.defense = $defense,
+            p.special_attack = $special_attack,
+            p.special_defense = $special_defense,
+            p.speed = $speed
         """
         tx.run(query, 
                id=data.get('id'), 
                name=data.get('name'), 
                height=data.get('height'), 
                weight=data.get('weight'), 
-               base_experience=data.get('base_experience'))
+               base_experience=data.get('base_experience'),
+               hp=stats.get('hp'),
+               attack=stats.get('attack'),
+               defense=stats.get('defense'),
+               special_attack=stats.get('special-attack'),
+               special_defense=stats.get('special-defense'),
+               speed=stats.get('speed'))
 
     @staticmethod
     def _create_type_node(tx, data):
@@ -153,21 +171,25 @@ class PokemonNodeBuilder:
                 time.sleep(0.05)
         print("    Finished loading Moves.")
 
-    def load_pokemon(self, start_id=1, end_id=151):
+    def load_pokemon(self, start_id=1, end_id=151, force_update=True):
         existing_ids = self.get_existing_ids("Pokemon")
-        print(f"\n[+] Starting to load Pokemon (Existing: {len(existing_ids)})...")
+        print(f"\n[+] Starting to load/update Pokemon...")
         
         with self.driver.session() as session:
             for i in range(start_id, end_id + 1):
-                if i in existing_ids:
+                if not force_update and i in existing_ids:
                     continue
                 
-                data = self.fetch_api_data(f"pokemon/{i}")
-                if data:
+                # Fetch from local cache instead of API
+                cache_file = os.path.join("cache", "pokemon", f"{i}.json")
+                if os.path.exists(cache_file):
+                    with open(cache_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
                     session.execute_write(self._create_pokemon_node, data)
-                    print(f"    [INSERTED] Pokemon: {data['name']} (ID: {i})")
-                time.sleep(0.1)
-        print("    Finished loading Pokemon.")
+                    print(f"    [UPSERTED] Pokemon: {data['name']} (ID: {i})")
+                else:
+                    print(f"    [WARNING] Cache missing for Pokemon ID: {i}")
+        print("    Finished loading/updating Pokemon.")
 
 
 if __name__ == "__main__":

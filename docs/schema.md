@@ -28,14 +28,20 @@
 | `height` | Integer | 身高（分米） | `7` |
 | `weight` | Integer | 体重（百克） | `69` |
 | `base_experience` | Integer | 基础经验值 | `64` |
+| `hp` | Integer | 种族值：HP | `45` |
+| `attack` | Integer | 种族值：攻击 | `49` |
+| `defense` | Integer | 种族值：防御 | `49` |
+| `special_attack` | Integer | 种族值：特攻 | `65` |
+| `special_defense` | Integer | 种族值：特防 | `65` |
+| `speed` | Integer | 种族值：速度 | `45` |
 
 **数量**：1,025
 
 **示例**：
 ```cypher
 MATCH (p:Pokemon {name: "pikachu"})
-RETURN p.id, p.name, p.height, p.weight, p.base_experience
--- 结果: 25, "pikachu", 4, 60, 112
+RETURN p.id, p.name, p.hp, p.attack, p.speed
+-- 结果: 25, "pikachu", 35, 55, 90
 ```
 
 ### 2.2 Type
