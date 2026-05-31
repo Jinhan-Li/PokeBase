@@ -93,15 +93,18 @@ RETURN p.id, p.name, p.height, p.weight, p.base_experience
 (Pokemon)-[:HAS_TYPE]->(Type)
 ```
 
-- **数量**：2,470
 - **说明**：每个 Pokemon 有 1~2 个属性
-- **属性**：无
+- **属性**：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `slot` | Integer | 属性槽位（1：主要属性，2：次要属性） |
 
 ```cypher
--- 查看皮卡丘的属性
-MATCH (p:Pokemon {name: "pikachu"})-[:HAS_TYPE]->(t:Type)
-RETURN p.name, t.name
--- 结果: pikachu, electric
+-- 查看皮卡丘的属性及槽位
+MATCH (p:Pokemon {name: "pikachu"})-[r:HAS_TYPE]->(t:Type)
+RETURN p.name, t.name, r.slot
+-- 结果: pikachu, electric, 1
 ```
 
 ### 3.2 HAS_ABILITY
@@ -110,15 +113,19 @@ RETURN p.name, t.name
 (Pokemon)-[:HAS_ABILITY]->(Ability)
 ```
 
-- **数量**：2,411
-- **说明**：每个 Pokemon 有 1~3 个特性（含隐藏特性）
-- **属性**：无
+- **说明**：每个 Pokemon 有 1~3 个特性
+- **属性**：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `is_hidden` | Boolean | 是否为隐藏特性（梦特） |
+| `slot` | Integer | 特性槽位（通常 1或2 为普通特性，3 为隐藏特性） |
 
 ```cypher
--- 查看小火龙的特性
-MATCH (p:Pokemon {name: "charmander"})-[:HAS_ABILITY]->(a:Ability)
+-- 查看小火龙的隐藏特性
+MATCH (p:Pokemon {name: "charmander"})-[r:HAS_ABILITY {is_hidden: true}]->(a:Ability)
 RETURN p.name, a.name
--- 结果: charmander → blaze, solar-power
+-- 结果: charmander → solar-power
 ```
 
 ### 3.3 CAN_LEARN
@@ -127,17 +134,51 @@ RETURN p.name, a.name
 (Pokemon)-[:CAN_LEARN]->(Move)
 ```
 
-- **数量**：78,512
-- **说明**：Pokemon 可学会的招式（含升级、TM、遗传等所有来源）
-- **属性**：无
+- **说明**：Pokemon 可学会的招式
+- **属性**：由于不同版本和学习方式的存在，这些属性是以列表形式并行记录的。
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `versions` | List[String] | 可学习该招式的游戏版本组（如 "red-blue", "sword-shield" 等） |
+| `methods` | List[String] | 学习方式（如 "level-up" 升级, "machine" 学习机, "egg" 遗传等） |
+| `levels` | List[Integer] | 习得等级（若通过升级学习则为具体等级，否则通常为 0） |
 
 ```cypher
--- 查看皮卡丘能学的招式（前10个）
-MATCH (p:Pokemon {name: "pikachu"})-[:CAN_LEARN]->(m:Move)
-RETURN m.name LIMIT 10
+-- 查询能通过升级（level-up）在 50 级之后学会特定招式的宝可梦
+MATCH (p:Pokemon)-[r:CAN_LEARN]->(m:Move)
+WHERE 'level-up' IN r.methods AND ANY(lvl IN r.levels WHERE lvl >= 50)
+RETURN p.name, m.name LIMIT 10
 ```
 
-### 3.4 HAS_TYPE（Move → Type）
+### 3.4 EVOLVES_TO & EVOLVES_FROM
+
+```
+(Pokemon)-[:EVOLVES_TO]->(Pokemon)
+(Pokemon)-[:EVOLVES_FROM]->(Pokemon)
+```
+
+- **说明**：宝可梦的进化关系，为双向连通。
+- **属性**：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `min_level` | Integer | 进化的最低等级要求（非等级进化则为 null） |
+| `item` | String | 进化所需物品（如 "fire-stone" 火之石，非物品进化则为 null） |
+| `details` | String | 变长 JSON 字符串，记录其余所有复杂的进化要求（如 "min_happiness": 220 亲密度、"time_of_day": "night" 特定时间、"location": "mt-coronet" 特定地点等，由于情况复杂，统一存作序列化 JSON 文本，可通过 CONTAINS 匹配） |
+
+```cypher
+-- 大器晚成宝可梦（50 级后进化）
+MATCH (from:Pokemon)-[r:EVOLVES_TO]->(to:Pokemon)
+WHERE r.min_level >= 50
+RETURN from.name, to.name, r.min_level
+
+-- 查看必须在特定地点（如 mt-coronet 殿元山）进化的宝可梦
+MATCH (from:Pokemon)-[r:EVOLVES_TO]->(to:Pokemon) 
+WHERE r.details CONTAINS '"location": "mt-coronet"' 
+RETURN from.name, to.name
+```
+
+### 3.5 HAS_TYPE（Move → Type）
 
 ```
 (Move)-[:HAS_TYPE]->(Type)
@@ -201,15 +242,22 @@ RETURN f.name, t.name
                     │ id, name │
                     └────▲─────┘
                          │
-                    HAS_ABILITY
+                    HAS_ABILITY {is_hidden, slot}
                          │
 ┌──────────┐        ┌────┴─────┐        ┌──────────┐
 │   Type   │◄───────│ Pokemon  │───────►│   Move   │
 │ id, name │HAS_TYPE│id,name,  │CAN_LEARN│id,name,  │
-└────▲─────┘        │height,   │        │power,    │
-     │              │weight,   │        │accuracy, │
-     │              │base_exp  │        │pp,priority│
-     │              └──────────┘        └────▲─────┘
+└────▲─────┘{slot}  │height,   │{versions,methods,levels}
+     │              │weight,   │        │power,    │
+     │              │base_exp  │        │accuracy, │
+     │              └─┬──────▲─┘        │pp,priority│
+     │                │      │               │
+     │     EVOLVES_TO │      │ EVOLVES_FROM  │
+     │ {min_level,item,details}              │
+     │                ▼      │               │
+     │              ┌──────────┐             │
+     │              │ Pokemon  │             │
+     │              └──────────┘             │
      │                                       │
      │  DAMAGE_TO {multiplier}          HAS_TYPE
      │────────────────────────►              │

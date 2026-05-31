@@ -1,7 +1,7 @@
 {
   "source_uri": "neo4j+s://98695523.databases.neo4j.io",
-  "exported_at": "2026-05-11T11:27:27.485973+00:00",
+  "exported_at": "2026-05-29T15:20:10.972532+00:00",
   "node_count": 2269,
-  "relationship_count": 83513,
+  "relationship_count": 84451,
   "batch_size": 1000
 }
