@@ -28,7 +28,6 @@ FALLBACK_SCHEMA_TEXT = """
 
 注意：
 - name 属性是英文小写（如 "pikachu", "fire"）
-- 当前数据库中没有进化关系（EVOLVES_TO）数据
 """.strip()
 
 

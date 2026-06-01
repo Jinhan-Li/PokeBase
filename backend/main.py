@@ -40,7 +40,6 @@ app.include_router(query.router, prefix="/api", tags=["query"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(import_data.router, prefix="/api", tags=["import"])
 
-
 @app.get("/api/health")
 def health():
     """健康检查接口"""
